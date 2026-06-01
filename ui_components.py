@@ -20,11 +20,9 @@ from data_processor import (
     filter_contains,
     find_col,
     format_thousand_yen_amount,
-    get_raw,
     get_value,
     html_safe,
     markdown_safe,
-    parse_amount_number,
     prospect_amount_total,
     unique_options,
 )
@@ -233,14 +231,6 @@ def select_customer(prefix: str, row_index) -> None:
     st.rerun()
 
 
-def format_contract_amount(row: pd.Series, df: pd.DataFrame, key: str) -> str:
-    """契約管理の千円単位金額を画面向けに万円・億円表示する。"""
-    amount = parse_amount_number(get_raw(row, df, key))
-    if amount is None:
-        return get_value(row, df, key)
-    return format_thousand_yen_amount(amount)
-
-
 def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = False) -> None:
     """顧客詳細画面のヘッダーカードを描画する。"""
     name = get_value(row, df, "name")
@@ -253,39 +243,6 @@ def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = 
     if company != NO_VALUE:
         company_html = f'<div class="crm-detail-company">{html_safe(company)}</div>'
 
-    if contract:
-        membership_amount = format_contract_amount(row, df, "membership_amount")
-        deposit_amount = format_contract_amount(row, df, "deposit_amount")
-        payment_due_date = get_value(row, df, "payment_due_date")
-        contract_document_confirm = get_value(row, df, "contract_document_confirm")
-        deposit_payment_confirm = get_value(row, df, "deposit_payment_confirm")
-        html_block = (
-            '<div class="crm-contract-chart-header">'
-            '<div class="crm-contract-chart-main">'
-            '<div class="crm-detail-label">顧客カルテ</div>'
-            f'<div class="crm-detail-name">{html_safe(name)}</div>'
-            f"{company_html}"
-            f'<span class="crm-detail-badge {badge_css_class(stage_badge_color(stage))}">{html_safe(stage)}</span>'
-            "</div>"
-            '<div class="crm-contract-chart-side">'
-            '<div class="crm-contract-chart-profile">'
-            f'<div class="crm-contract-chart-tier">{html_safe(tier)}</div>'
-            f'<div class="crm-detail-value">担当：{html_safe(owner)}</div>'
-            "</div>"
-            '<div class="crm-contract-chart-metrics">'
-            f'<div><span>契約金額</span><strong>{html_safe(membership_amount)}</strong></div>'
-            f'<div><span>予約金</span><strong>{html_safe(deposit_amount)}</strong></div>'
-            f'<div><span>入金予定日</span><strong>{html_safe(payment_due_date)}</strong></div>'
-            f'<div><span>契約書確認</span><strong>{html_safe(contract_document_confirm)}</strong></div>'
-            f'<div><span>予約金入金確認</span><strong>{html_safe(deposit_payment_confirm)}</strong></div>'
-            "</div>"
-            "</div></div>"
-        )
-        st.markdown(html_block, unsafe_allow_html=True)
-        st.divider()
-        return
-
-    probability = get_value(row, df, "probability")
     html_block = (
         '<div class="crm-detail-header">'
         '<div class="crm-detail-label">顧客カルテ</div>'
@@ -296,8 +253,6 @@ def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = 
         f'<span class="crm-detail-badge {badge_css_class(stage_badge_color(stage))}">{html_safe(stage)}</span></div>'
         '<div><div class="crm-detail-label">ティア</div>'
         f'<span class="crm-detail-badge {badge_css_class(tier_badge_color(tier))}">{html_safe(tier)}</span></div>'
-        '<div><div class="crm-detail-label">確度</div>'
-        f'<span class="crm-detail-badge {badge_css_class(probability_badge_color(probability))}">{html_safe(probability)}</span></div>'
         '<div><div class="crm-detail-label">担当者</div>'
         f'<div class="crm-detail-value">{html_safe(owner)}</div></div>'
         "</div></div>"
