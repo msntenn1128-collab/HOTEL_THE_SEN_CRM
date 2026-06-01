@@ -114,24 +114,30 @@ def render_search_area(df: pd.DataFrame, prefix: str) -> pd.DataFrame:
         with row1[4]:
             owner = st.text_input("担当者", key=f"{prefix}_owner")
 
-        row2 = st.columns(5)
-        with row2[0]:
-            awareness_route = st.text_input("認知経路", key=f"{prefix}_awareness_route")
-        with row2[1]:
-            referrer = st.text_input("紹介者", key=f"{prefix}_referrer")
-        with row2[2]:
-            next_action = st.text_input("次アクション", key=f"{prefix}_next_action")
-        with row2[3]:
-            due_filter = st.selectbox("次期日", DUE_FILTER_OPTIONS, key=f"{prefix}_due_filter")
-        with row2[4]:
-            st.write("")
+        awareness_route = ""
+        referrer = ""
+        next_action = ""
+        due_filter = "指定なし"
+        if prefix != "contract":
+            row2 = st.columns(5)
+            with row2[0]:
+                awareness_route = st.text_input("認知経路", key=f"{prefix}_awareness_route")
+            with row2[1]:
+                referrer = st.text_input("紹介者", key=f"{prefix}_referrer")
+            with row2[2]:
+                next_action = st.text_input("次アクション", key=f"{prefix}_next_action")
+            with row2[3]:
+                due_filter = st.selectbox("次期日", DUE_FILTER_OPTIONS, key=f"{prefix}_due_filter")
+            with row2[4]:
+                st.write("")
 
     result = df.copy()
     result = filter_contains(result, "no", no)
     result = filter_contains(result, "owner", owner)
-    result = filter_contains(result, "awareness_route", awareness_route)
-    result = filter_contains(result, "referrer", referrer)
-    result = filter_contains(result, "next_action", next_action)
+    if prefix != "contract":
+        result = filter_contains(result, "awareness_route", awareness_route)
+        result = filter_contains(result, "referrer", referrer)
+        result = filter_contains(result, "next_action", next_action)
 
     if name:
         name_col = find_col(result, "name")
@@ -152,7 +158,8 @@ def render_search_area(df: pd.DataFrame, prefix: str) -> pd.DataFrame:
         if col:
             result = result[result[col].astype(str) == tier]
 
-    result = apply_due_filter(result, due_filter)
+    if prefix != "contract":
+        result = apply_due_filter(result, due_filter)
     return result
 
 

@@ -26,13 +26,27 @@ def find_col(df: pd.DataFrame, key: str) -> str | None:
         if alias in df.columns:
             return alias
 
-    normalized_cols = {str(col).replace(" ", "").lower(): col for col in df.columns}
+    normalized_cols = {normalize_column_name(col): col for col in df.columns}
     for alias in aliases:
-        match = normalized_cols.get(alias.replace(" ", "").lower())
+        match = normalized_cols.get(normalize_column_name(alias))
         if match:
             return match
 
+    for alias in aliases:
+        normalized_alias = normalize_column_name(alias)
+        if len(normalized_alias) < 3:
+            continue
+        for normalized_col, col in normalized_cols.items():
+            if normalized_alias in normalized_col or normalized_col in normalized_alias:
+                return col
+
     return None
+
+
+def normalize_column_name(value: Any) -> str:
+    """列名比較用に改行・半角/全角スペース差異を吸収する。"""
+    text = unicodedata.normalize("NFKC", str(value)).strip().lower()
+    return "".join(text.split())
 
 
 def get_raw(row: pd.Series, df: pd.DataFrame, key: str) -> Any | None:
