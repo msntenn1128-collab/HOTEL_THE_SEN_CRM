@@ -238,6 +238,13 @@ def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = 
     stage = get_value(row, df, "stage")
     tier = get_value(row, df, "tier")
     owner = get_value(row, df, "owner")
+    probability_html = ""
+    if not contract:
+        probability = get_value(row, df, "probability")
+        probability_html = (
+            '<div><div class="crm-detail-label">見込み確度</div>'
+            f'<span class="crm-detail-badge {badge_css_class(probability_badge_color(probability))}">{html_safe(probability)}</span></div>'
+        )
 
     company_html = ""
     if company != NO_VALUE:
@@ -255,6 +262,7 @@ def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = 
         f'<span class="crm-detail-badge {badge_css_class(tier_badge_color(tier))}">{html_safe(tier)}</span></div>'
         '<div><div class="crm-detail-label">担当者</div>'
         f'<div class="crm-detail-value">{html_safe(owner)}</div></div>'
+        f"{probability_html}"
         "</div></div>"
     )
     st.markdown(html_block, unsafe_allow_html=True)
