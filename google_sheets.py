@@ -21,14 +21,24 @@ def normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def get_gspread_client():
+    service_account_path = Path(SERVICE_ACCOUNT_FILE)
+
+    if service_account_path.exists():
+        return gspread.service_account(filename=str(service_account_path))
+
+    return gspread.service_account_from_dict(
+        dict(st.secrets["gcp_service_account"])
+    )
+
+
 @st.cache_data(ttl=GOOGLE_SHEETS_CACHE_TTL_SECONDS)
 def read_google_sheet(sheet_name: str) -> tuple[pd.DataFrame, str]:
     """Google Sheetsから指定シートを取得し、DataFrameと取得時刻を返す。"""
     print("Google Sheets取得")
     fetched_at = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
 
-    # サービスアカウントJSONを使い、ユーザー操作なしで本番運用できる接続方式にしている。
-    client = gspread.service_account(filename=str(Path(SERVICE_ACCOUNT_FILE)))
+    client = get_gspread_client()
     spreadsheet = client.open_by_key(GOOGLE_SHEETS_ID)
     worksheet = spreadsheet.worksheet(sheet_name)
     values = worksheet.get_all_values()
