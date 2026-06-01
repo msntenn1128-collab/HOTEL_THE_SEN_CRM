@@ -231,7 +231,7 @@ def select_customer(prefix: str, row_index) -> None:
     st.rerun()
 
 
-def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = False) -> None:
+def render_salesforce_header(row: pd.Series, df: pd.DataFrame, show_probability: bool = False) -> None:
     """顧客詳細画面のヘッダーカードを描画する。"""
     name = get_value(row, df, "name")
     company = get_value(row, df, "company")
@@ -239,7 +239,7 @@ def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = 
     tier = get_value(row, df, "tier")
     owner = get_value(row, df, "owner")
     probability_html = ""
-    if not contract:
+    if show_probability:
         probability = get_value(row, df, "probability")
         probability_html = (
             '<div><div class="crm-detail-label">見込み確度</div>'
@@ -384,7 +384,7 @@ def render_detail(df: pd.DataFrame, prefix: str, contract: bool) -> None:
     if action_cols[1].button("この顧客の明細を見る", key=f"{prefix}_detail_tab", use_container_width=True):
         set_detail_target(row, df, prefix)
 
-    render_salesforce_header(row, df, contract)
+    render_salesforce_header(row, df, show_probability=(prefix == "prospect"))
     sections = CONTRACT_DETAIL_SECTIONS if contract else PROSPECT_DETAIL_SECTIONS
     render_detail_sections(row, df, sections)
 
