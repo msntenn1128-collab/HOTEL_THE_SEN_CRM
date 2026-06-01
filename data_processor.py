@@ -37,7 +37,7 @@ def find_col(df: pd.DataFrame, key: str) -> str | None:
         if len(normalized_alias) < 3:
             continue
         for normalized_col, col in normalized_cols.items():
-            if normalized_alias in normalized_col or normalized_col in normalized_alias:
+            if normalized_alias in normalized_col:
                 return col
 
     return None
