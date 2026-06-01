@@ -7,6 +7,7 @@ from __future__ import annotations
 import streamlit as st
 
 from config import CONTRACT_SHEET_NAME, PROSPECT_SHEET_NAME
+from constants import TAB_MIGRATIONS
 from google_sheets import read_google_sheet
 from styles import apply_styles
 from ui_components import (
@@ -47,7 +48,16 @@ def main() -> None:
 
     st.caption(f"最終取得時刻：見込み管理 {prospect_fetched_at} / 契約管理 {contract_fetched_at}")
 
-    render_summary_area(prospect_df, contract_df)
+    active_tab_for_summary = TAB_MIGRATIONS.get(
+        st.session_state.get("active_tab"),
+        st.session_state.get("active_tab", "見込み管理"),
+    )
+    is_customer_detail = (
+        (active_tab_for_summary == "見込み管理" and st.session_state.get("prospect_view") == "detail")
+        or (active_tab_for_summary == "契約管理" and st.session_state.get("contract_view") == "detail")
+    )
+    if not is_customer_detail:
+        render_summary_area(prospect_df, contract_df)
 
     active_tab = render_tab_navigation()
 

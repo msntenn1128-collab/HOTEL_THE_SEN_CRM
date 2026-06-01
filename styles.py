@@ -156,6 +156,12 @@ div[class*="st-key-contract_customer_card_"] strong {
     .crm-detail-status {
         grid-template-columns: 1fr 1fr;
     }
+    .crm-contract-chart-header {
+        grid-template-columns: 1fr;
+    }
+    .crm-contract-chart-metrics {
+        grid-template-columns: 1fr;
+    }
 }
 .crm-section-card {
     background: #FFFFFF;
@@ -201,6 +207,76 @@ div[class*="st-key-contract_customer_card_"] strong {
     border-radius: 10px;
     padding: 18px 20px;
     margin-bottom: 18px;
+}
+.crm-contract-chart-header {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.1fr) minmax(360px, 1.6fr);
+    gap: 22px;
+    background: linear-gradient(135deg, #1F2D4A 0%, #2B3B5E 100%);
+    border: 1px solid rgba(184, 155, 94, 0.42);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 12px 28px rgba(31, 45, 74, 0.18);
+}
+.crm-contract-chart-header .crm-detail-label {
+    color: #E8DDC5;
+    font-weight: 700;
+}
+.crm-contract-chart-header .crm-detail-name {
+    color: #FFFFFF;
+    margin-bottom: 10px;
+}
+.crm-contract-chart-header .crm-detail-company {
+    color: #CBD5E1;
+}
+.crm-contract-chart-main {
+    min-width: 0;
+}
+.crm-contract-chart-side {
+    display: grid;
+    gap: 14px;
+    align-content: center;
+}
+.crm-contract-chart-profile {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+}
+.crm-contract-chart-profile .crm-detail-value {
+    color: #FFFFFF;
+}
+.crm-contract-chart-tier {
+    color: #FEF3C7;
+    font-size: 18px;
+    font-weight: 800;
+}
+.crm-contract-chart-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+.crm-contract-chart-metrics div {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    padding: 10px 12px;
+    min-width: 0;
+}
+.crm-contract-chart-metrics span {
+    display: block;
+    color: #CBD5E1;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.crm-contract-chart-metrics strong {
+    display: block;
+    color: #FFFFFF;
+    font-size: 16px;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
 }
 .crm-detail-name {
     color: #1F2937;

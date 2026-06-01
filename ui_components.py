@@ -20,9 +20,11 @@ from data_processor import (
     filter_contains,
     find_col,
     format_thousand_yen_amount,
+    get_raw,
     get_value,
     html_safe,
     markdown_safe,
+    parse_amount_number,
     prospect_amount_total,
     unique_options,
 )
@@ -231,19 +233,59 @@ def select_customer(prefix: str, row_index) -> None:
     st.rerun()
 
 
-def render_salesforce_header(row: pd.Series, df: pd.DataFrame) -> None:
+def format_contract_amount(row: pd.Series, df: pd.DataFrame, key: str) -> str:
+    """契約管理の千円単位金額を画面向けに万円・億円表示する。"""
+    amount = parse_amount_number(get_raw(row, df, key))
+    if amount is None:
+        return get_value(row, df, key)
+    return format_thousand_yen_amount(amount)
+
+
+def render_salesforce_header(row: pd.Series, df: pd.DataFrame, contract: bool = False) -> None:
     """顧客詳細画面のヘッダーカードを描画する。"""
     name = get_value(row, df, "name")
     company = get_value(row, df, "company")
     stage = get_value(row, df, "stage")
     tier = get_value(row, df, "tier")
-    probability = get_value(row, df, "probability")
     owner = get_value(row, df, "owner")
 
     company_html = ""
     if company != NO_VALUE:
         company_html = f'<div class="crm-detail-company">{html_safe(company)}</div>'
 
+    if contract:
+        membership_amount = format_contract_amount(row, df, "membership_amount")
+        deposit_amount = format_contract_amount(row, df, "deposit_amount")
+        payment_due_date = get_value(row, df, "payment_due_date")
+        contract_document_confirm = get_value(row, df, "contract_document_confirm")
+        deposit_payment_confirm = get_value(row, df, "deposit_payment_confirm")
+        html_block = (
+            '<div class="crm-contract-chart-header">'
+            '<div class="crm-contract-chart-main">'
+            '<div class="crm-detail-label">顧客カルテ</div>'
+            f'<div class="crm-detail-name">{html_safe(name)}</div>'
+            f"{company_html}"
+            f'<span class="crm-detail-badge {badge_css_class(stage_badge_color(stage))}">{html_safe(stage)}</span>'
+            "</div>"
+            '<div class="crm-contract-chart-side">'
+            '<div class="crm-contract-chart-profile">'
+            f'<div class="crm-contract-chart-tier">{html_safe(tier)}</div>'
+            f'<div class="crm-detail-value">担当：{html_safe(owner)}</div>'
+            "</div>"
+            '<div class="crm-contract-chart-metrics">'
+            f'<div><span>契約金額</span><strong>{html_safe(membership_amount)}</strong></div>'
+            f'<div><span>予約金</span><strong>{html_safe(deposit_amount)}</strong></div>'
+            f'<div><span>入金予定日</span><strong>{html_safe(payment_due_date)}</strong></div>'
+            f'<div><span>契約書確認</span><strong>{html_safe(contract_document_confirm)}</strong></div>'
+            f'<div><span>予約金入金確認</span><strong>{html_safe(deposit_payment_confirm)}</strong></div>'
+            "</div>"
+            "</div></div>"
+        )
+        st.markdown(html_block, unsafe_allow_html=True)
+        st.divider()
+        return
+
+    probability = get_value(row, df, "probability")
     html_block = (
         '<div class="crm-detail-header">'
         '<div class="crm-detail-label">顧客カルテ</div>'
@@ -282,22 +324,28 @@ def render_customer_card(row: pd.Series, df: pd.DataFrame, prefix: str, contract
 
         stage = get_value(row, df, "stage")
         tier = get_value(row, df, "tier")
-        probability = get_value(row, df, "probability")
-        badge_cols = st.columns([1, 1, 1, 5])
+        badge_cols = st.columns([1, 1, 5] if contract else [1, 1, 1, 5])
         with badge_cols[0]:
             st.badge(stage, color=stage_badge_color(stage))
         with badge_cols[1]:
             st.badge(tier, color=tier_badge_color(tier))
-        with badge_cols[2]:
-            st.badge(f"確度：{probability}", color=probability_badge_color(probability))
+        if not contract:
+            with badge_cols[2]:
+                probability = get_value(row, df, "probability")
+                st.badge(f"確度：{probability}", color=probability_badge_color(probability))
 
         meta = [
             f"NO: {get_value(row, df, 'no')}",
             f"担当者: {get_value(row, df, 'owner')}",
-            f"紹介者: {get_value(row, df, 'referrer')}",
-            f"次回アポ: {get_value(row, df, 'next_appointment')}",
-            f"次アクション: {get_value(row, df, 'next_action')}",
         ]
+        if not contract:
+            meta.extend(
+                [
+                    f"紹介者: {get_value(row, df, 'referrer')}",
+                    f"次回アポ: {get_value(row, df, 'next_appointment')}",
+                    f"次アクション: {get_value(row, df, 'next_action')}",
+                ]
+            )
         st.caption(markdown_safe(" / ".join(meta)))
 
 
@@ -373,7 +421,7 @@ def render_detail(df: pd.DataFrame, prefix: str, contract: bool) -> None:
     if action_cols[1].button("この顧客の明細を見る", key=f"{prefix}_detail_tab", use_container_width=True):
         set_detail_target(row, df, prefix)
 
-    render_salesforce_header(row, df)
+    render_salesforce_header(row, df, contract)
     sections = CONTRACT_DETAIL_SECTIONS if contract else PROSPECT_DETAIL_SECTIONS
     render_detail_sections(row, df, sections)
 

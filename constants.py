@@ -125,7 +125,7 @@ CONTRACT_DETAIL_SECTIONS = [
         [("合計", "contract_total"), ("請求書発行済み", "invoice_issued"), ("入金予定日", "payment_due_date")],
     ),
     (
-        "契約後フォロー指標",
+        "契約後フォロー詳細",
         [
             ("累計イベント参加回数", "event_participation_count"),
             ("累計ARI投資額(千円)", "ari_investment_amount"),
